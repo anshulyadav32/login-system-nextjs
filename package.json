@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start -p 3001",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "promote-admin": "node scripts/promote-admin.mjs",
     "list-users": "node scripts/list-users.mjs",
     "create-test-email": "node scripts/create-test-email.mjs"
@@ -20,19 +21,13 @@
     "next": "15.5.2",
     "next-auth": "^5.0.0-beta.29",
     "nodemailer": "^6.10.1",
-    "prisma": "^6.15.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "prisma": "^6.15.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
-    "@types/react": "19.1.12",
-    "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
     "typescript": "^5"
   }
 }

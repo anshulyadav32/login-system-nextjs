@@ -10,7 +10,10 @@ datasource db {
 model User {
   id            String    @id @default(cuid())
   name          String?
+  surname       String?
+  username      String?   @unique
   email         String    @unique
+  phone         String?
   emailVerified DateTime?
   image         String?
   password      String?

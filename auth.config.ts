@@ -1,5 +1,4 @@
 import type { NextAuthConfig } from 'next-auth'
-import type { JWT } from 'next-auth/jwt'
 import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
 import GitHub from 'next-auth/providers/github'
@@ -7,6 +6,7 @@ import bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
 
 export default {
+  trustHost: true,
   providers: [
     // Google OAuth Provider
     Google({
