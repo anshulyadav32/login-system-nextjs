@@ -36,6 +36,17 @@ yarn-error.log*
 # PostgreSQL data directory
 postgres_data/
 
+# Local database files
+prisma/dev.db
+*.db
+
+# Local deployment scripts
+deploy-env.ps1
+remove-env.ps1
+
+# Documentation files
+DEPLOYMENT.md
+
 # vercel
 .vercel
 
