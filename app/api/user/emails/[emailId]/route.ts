@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 // DELETE - Remove email address
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { emailId: string } }
+  { params }: { params: Promise<{ emailId: string }> }
 ) {
   try {
     const session = await auth();
@@ -17,7 +17,7 @@ export async function DELETE(
       );
     }
 
-    const { emailId } = params;
+    const { emailId } = await params;
 
     const user = await prisma.user.findUnique({
       where: { email: session.user?.email || '' }
@@ -78,7 +78,7 @@ export async function DELETE(
 // PATCH - Update email (set as primary)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { emailId: string } }
+  { params }: { params: Promise<{ emailId: string }> }
 ) {
   try {
     const session = await auth();
@@ -90,7 +90,7 @@ export async function PATCH(
       );
     }
 
-    const { emailId } = params;
+    const { emailId } = await params;
     const { isPrimary } = await request.json();
 
     const user = await prisma.user.findUnique({
