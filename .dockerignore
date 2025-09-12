@@ -119,5 +119,4 @@ logs
 Thumbs.db
 .DS_Store
 
-# Prisma
-prisma/migrations
+# Prisma removed

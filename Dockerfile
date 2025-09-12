@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-RUN npx prisma generate
+# Prisma removed - no longer needed
 RUN npm run build
 
 # Production stage
@@ -18,7 +18,7 @@ COPY --from=builder /app/.next ./.next
 # Skip the public folder if it doesn't exist
 # COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/prisma ./prisma
+# Prisma removed - no longer needed
 
 EXPOSE 3001
 

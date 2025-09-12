@@ -1,82 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { PrismaUserService } from '@/lib/prisma-user-service'
 
-// GET - Retrieve user profile
+// Validation schema for profile updates
+const profileUpdateSchema = z.object({
+  name: z.string().min(1, 'Name is required').optional(),
+  surname: z.string().optional(),
+  username: z.string().min(3, 'Username must be at least 3 characters').optional(),
+  phone: z.string().optional(),
+})
+
 export async function GET() {
   try {
     const session = await auth()
-
-    if (!session) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user?.email || '' },
-      select: {
-        id: true,
-        name: true,
-        lastName: true,
-        username: true,
-        email: true,
-        phone: true,
-        image: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    })
-
+    // Get user from storage
+    const user = await PrismaUserService.findById(session.user.id)
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
     }
 
     return NextResponse.json({ user })
   } catch (error) {
-    console.error('Profile GET error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Profile fetch error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 
-// PUT - Update user profile
 export async function PUT(request: NextRequest) {
   try {
     const session = await auth()
-
-    if (!session) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
     const body = await request.json()
-    const { name, surname, username, phone } = body
+    const validatedData = profileUpdateSchema.parse(body)
 
-    // Validate input
-    if (username && username.length < 3) {
-      return NextResponse.json(
-        { error: 'Username must be at least 3 characters long' },
-        { status: 400 }
-      )
-    }
-
-    if (phone && !/^[+]?[1-9]\d{1,14}$/.test(phone)) {
-      return NextResponse.json(
-        { error: 'Invalid phone number format' },
-        { status: 400 }
-      )
-    }
-
-    // Check if username is already taken (if provided and different from current)
-    if (username) {
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          username,
-          NOT: {
-            email: session.user?.email || ''
-          }
-        }
-      })
-
-      if (existingUser) {
+    // Check if username is already taken (if username is being updated)
+    if (validatedData.username) {
+      const existingUser = await PrismaUserService.findByUsername(validatedData.username)
+      if (existingUser && existingUser.id !== session.user.id) {
         return NextResponse.json(
           { error: 'Username is already taken' },
           { status: 400 }
@@ -84,44 +66,34 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Update user profile
-    const updatedUser = await prisma.user.update({
-      where: { email: session.user?.email || '' },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(surname !== undefined && { surname }),
-        ...(username !== undefined && { username }),
-        ...(phone !== undefined && { phone })
-      },
-      select: {
-        id: true,
-        name: true,
-        surname: true,
-        username: true,
-        email: true,
-        phone: true,
-        image: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    })
+    // Update user in storage
+    const updatedUser = await PrismaUserService.updateUser(session.user.id, validatedData)
+    if (!updatedUser) {
+      return NextResponse.json(
+        { error: 'Failed to update user' },
+        { status: 500 }
+      )
+    }
 
+    // Return user without password
+    const { password, ...userWithoutPassword } = updatedUser
     return NextResponse.json({
       message: 'Profile updated successfully',
-      user: updatedUser
+      user: userWithoutPassword
     })
   } catch (error) {
-    console.error('Profile PUT error:', error)
+    console.error('Profile update error:', error)
     
-    // Handle unique constraint violation for username
-    if (error instanceof Error && error.message.includes('Unique constraint')) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Username is already taken' },
+        { error: 'Invalid request data', details: error.errors },
         { status: 400 }
       )
     }
 
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }

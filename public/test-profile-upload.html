@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Picture Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.delete {
+            background-color: #dc3545;
+        }
+        button.delete:hover {
+            background-color: #c82333;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 50%;
+            border: 3px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Profile Picture Upload Test</h1>
+        
+        <div class="upload-section">
+            <h3>Upload Profile Picture</h3>
+            <p>Select an image file (JPEG, PNG, WebP) - Max 5MB</p>
+            <input type="file" id="imageFile" accept="image/jpeg,image/jpg,image/png,image/webp">
+            <br>
+            <button onclick="uploadImage()">📤 Upload Picture</button>
+            <button onclick="deleteImage()" class="delete">🗑️ Delete Picture</button>
+        </div>
+
+        <div class="preview" id="preview" style="display: none;">
+            <h3>Preview:</h3>
+            <img id="previewImg" src="" alt="Profile Picture">
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Preview selected image
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('preview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function uploadImage() {
+            const fileInput = document.getElementById('imageFile');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                showResult('Please select an image file first.', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+
+            try {
+                showResult('Uploading...', 'success');
+                
+                const response = await fetch('/api/profile/picture', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Success!\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteImage() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                showResult('Deleting...', 'success');
+                
+                const response = await fetch('/api/profile/picture', {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Success!\n${JSON.stringify(data, null, 2)}`, 'success');
+                    document.getElementById('preview').style.display = 'none';
+                    document.getElementById('imageFile').value = '';
+                } else {
+                    showResult(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${type}`;
+        }
+    </script>
+</body>
+</html>
