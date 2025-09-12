@@ -26,8 +26,8 @@ export async function GET() {
     const stats = await PrismaUserService.getUserStats()
     const dashboardData = {
       totalUsers: stats.totalUsers,
-      totalAdmins: (stats.usersByRole.admin || 0) + (stats.usersByRole.super_admin || 0),
-      usersByRole: stats.usersByRole,
+      totalAdmins: stats.adminUsers,
+      regularUsers: stats.regularUsers,
       recentActivity: [
         { id: 1, action: 'User registered', timestamp: new Date().toISOString() },
         { id: 2, action: 'Admin login', timestamp: new Date().toISOString() }
