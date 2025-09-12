@@ -38,7 +38,7 @@ export default {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role
+        token.role = user.role || 'user'
       }
       return token
     },
