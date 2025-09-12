@@ -89,7 +89,7 @@ export async function DELETE() {
     }
 
     // Remove profile picture from storage
-    const updatedUser = await PrismaUserService.updateUser(session.user.id, { profilePicture: null })
+    const updatedUser = await PrismaUserService.updateUser(session.user.id, { profilePicture: undefined })
     if (!updatedUser) {
       return NextResponse.json(
         { error: 'Failed to remove profile picture' },
