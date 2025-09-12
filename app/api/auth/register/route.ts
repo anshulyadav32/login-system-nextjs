@@ -23,13 +23,9 @@ export async function POST(request: NextRequest) {
       role: validatedData.role
     })
 
-    // Return user data without password
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userWithoutPassword } = newUser
-
     return NextResponse.json({
       message: 'User registered successfully',
-      user: userWithoutPassword
+      user: newUser
     }, { status: 201 })
   } catch (error) {
     console.error('Registration error:', error)
