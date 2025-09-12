@@ -76,6 +76,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Return user without password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = updatedUser
     return NextResponse.json({
       message: 'Profile updated successfully',

@@ -40,6 +40,7 @@ export class PrismaUserService {
       }
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user
     return userWithoutPassword
   }
@@ -51,7 +52,7 @@ export class PrismaUserService {
     role: string
     profilePicture: string
   }>): Promise<UserWithoutPassword | null> {
-    const updateData: any = { ...updates }
+    const updateData: Partial<User> = { ...updates }
     
     // Hash password if it's being updated
     if (updateData.password) {
@@ -64,6 +65,7 @@ export class PrismaUserService {
         data: updateData
       })
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userWithoutPassword } = user
       return userWithoutPassword
     } catch {
