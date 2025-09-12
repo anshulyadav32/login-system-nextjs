@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Return user data without password
-    const { password, ...userWithoutPassword } = newUser
+    const { password: _, ...userWithoutPassword } = newUser
 
     return NextResponse.json({
       message: 'User registered successfully',

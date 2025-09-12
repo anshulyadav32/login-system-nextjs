@@ -1,6 +1,6 @@
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
-import { User } from '@prisma/client'
+import type { User } from '@prisma/client'
 
 export type UserWithoutPassword = Omit<User, 'password'>
 
@@ -40,7 +40,7 @@ export class PrismaUserService {
       }
     })
 
-    const { password, ...userWithoutPassword } = user
+    const { password: _, ...userWithoutPassword } = user
     return userWithoutPassword
   }
 
@@ -64,9 +64,9 @@ export class PrismaUserService {
         data: updateData
       })
 
-      const { password, ...userWithoutPassword } = user
+      const { password: _, ...userWithoutPassword } = user
       return userWithoutPassword
-    } catch (error) {
+    } catch {
       return null
     }
   }
