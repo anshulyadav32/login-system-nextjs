@@ -1,5 +1,5 @@
 import { prisma } from './prisma'
-import bcrypt from 'bcryptjs'
+import * as bcrypt from 'bcryptjs'
 import type { User } from '@prisma/client'
 
 export type UserWithoutPassword = Omit<User, 'password'>
@@ -74,7 +74,11 @@ export class PrismaUserService {
   }
 
   static async verifyPassword(user: User, password: string): Promise<boolean> {
-    return await bcrypt.compare(password, user.password)
+    if (!user.password) {
+      return false
+    }
+    const result = await bcrypt.compare(password, user.password)
+    return result
   }
 
   static async isEmailAvailable(email: string): Promise<boolean> {
