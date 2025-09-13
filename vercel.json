@@ -17,5 +17,19 @@
         }
       ]
     }
+  ],
+  "functions": {
+    "app/route.ts": {
+      "maxDuration": 10
+    },
+    "app/api/*/route.ts": {
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/app/route.ts"
+    }
   ]
 }

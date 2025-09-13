@@ -59,5 +59,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/api/((?!health|test|status|auth/passkey).)*"], // protect dashboard, admin routes and handle CORS for API routes, allow passkey endpoints
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/api/((?!health|test|status|auth/passkey).)*"], // protect dashboard, admin routes and handle CORS for API routes, allow passkey endpoints, root path is public
 }
