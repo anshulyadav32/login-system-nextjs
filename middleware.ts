@@ -27,7 +27,7 @@ function corsMiddleware(request: Request) {
   )
   response.headers.set(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Requested-With'
+    'Content-Type, Authorization, X-Requested-With, X-Challenge'
   )
 
   return response
@@ -59,5 +59,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/api/:path*"], // protect dashboard, admin routes and handle CORS for API routes
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/api/((?!health|test|status|auth/passkey).)*"], // protect dashboard, admin routes and handle CORS for API routes, allow passkey endpoints
 }

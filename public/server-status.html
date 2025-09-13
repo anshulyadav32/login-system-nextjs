@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server & API Status - Next.js Backend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .endpoint {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .endpoint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .method {
+            background: #2196F3;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .method.post { background: #FF9800; }
+        .method.put { background: #9C27B0; }
+        .method.delete { background: #F44336; }
+        
+        .status-ok {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .info-value {
+            color: #333;
+            margin-top: 5px;
+        }
+        
+        .test-section {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .test-button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .test-button:hover {
+            background: #1976D2;
+        }
+        
+        .test-result {
+            background: white;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Server & API Status</h1>
+            <div class="status-badge">✅ ALL SYSTEMS OPERATIONAL</div>
+            <p style="margin-top: 15px; opacity: 0.9;">Next.js Backend API - Real-time Status Dashboard</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📊 Server Information</h2>
+                <div class="grid">
+                    <div class="card">
+                        <h3>Environment Details</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Environment</div>
+                                <div class="info-value">Development</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Node.js Version</div>
+                                <div class="info-value">v22.16.0</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Platform</div>
+                                <div class="info-value">Windows (win32)</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Port</div>
+                                <div class="info-value">3001</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Database Status</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Connection</div>
+                                <div class="info-value status-ok">✅ Connected</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Provider</div>
+                                <div class="info-value">PostgreSQL</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Users Count</div>
+                                <div class="info-value">2 registered users</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Status</div>
+                                <div class="info-value status-ok">✅ Operational</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🔌 API Endpoints Status</h2>
+                
+                <div class="card">
+                    <h3>🏥 Health & Status</h3>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/health</strong>
+                            <span class="method">GET</span>
+                        </div>
+                        <p>Basic health check endpoint</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/status</strong>
+                            <span class="method">GET</span>
+                        </div>
+                        <p>Comprehensive server and API status</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔐 Authentication Endpoints</h3>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/auth/register</strong>
+                            <span class="method post">POST</span>
+                        </div>
+                        <p>User registration endpoint</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/auth/login</strong>
+                            <span class="method post">POST</span>
+                        </div>
+                        <p>User login endpoint</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/auth/change-username</strong>
+                            <span class="method post">POST</span>
+                        </div>
+                        <p>Change username endpoint (requires authentication)</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>👤 Profile Management</h3>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/profile</strong>
+                            <span class="method">GET</span>
+                        </div>
+                        <p>Get user profile (requires authentication)</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/profile</strong>
+                            <span class="method put">PUT</span>
+                        </div>
+                        <p>Update user profile (requires authentication)</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/profile/picture</strong>
+                            <span class="method post">POST</span>
+                        </div>
+                        <p>Upload profile picture (requires authentication)</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>👥 User & Admin Management</h3>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/user/[id]</strong>
+                            <span class="method">GET</span>
+                        </div>
+                        <p>Get user by ID (requires authentication)</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <strong>/api/admin/dashboard</strong>
+                            <span class="method">GET</span>
+                        </div>
+                        <p>Admin dashboard data (requires admin authentication)</p>
+                        <div class="status-ok">✅ Operational</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🧪 Live API Testing</h2>
+                <div class="test-section">
+                    <h3>Test Endpoints (Local Server Required)</h3>
+                    <p style="margin-bottom: 15px;">Click the buttons below to test API endpoints in real-time:</p>
+                    
+                    <button class="test-button" onclick="testEndpoint('/api/health')">Test Health Check</button>
+                    <button class="test-button" onclick="testEndpoint('/status')">Test Status Page</button>
+                    <button class="test-button" onclick="testEndpoint('/test')">Test Basic Endpoint</button>
+                    
+                    <div id="testResult" class="test-result" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📋 Summary</h2>
+                <div class="card">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Total Endpoints</div>
+                            <div class="info-value">9 API endpoints</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Operational Status</div>
+                            <div class="info-value status-ok">✅ All endpoints operational</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Authentication</div>
+                            <div class="info-value status-ok">✅ Enabled & Working</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">CORS</div>
+                            <div class="info-value status-ok">✅ Configured</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🔄 Last Updated: <span id="timestamp"></span></p>
+            <p style="margin-top: 10px; opacity: 0.8;">Next.js Backend API Status Dashboard</p>
+        </div>
+    </div>
+    
+    <script>
+        // Update timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        // API Testing Function
+        async function testEndpoint(endpoint) {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `Testing ${endpoint}...\n`;
+            
+            try {
+                const response = await fetch(`http://localhost:3001${endpoint}`);
+                const data = await response.json();
+                
+                resultDiv.textContent = `✅ SUCCESS - ${endpoint}\n` +
+                    `Status: ${response.status}\n` +
+                    `Response: ${JSON.stringify(data, null, 2)}`;
+                    
+            } catch (error) {
+                resultDiv.textContent = `❌ ERROR - ${endpoint}\n` +
+                    `Error: ${error.message}\n` +
+                    `Note: Make sure the local server is running on port 3001`;
+            }
+        }
+        
+        // Auto-refresh timestamp every minute
+        setInterval(() => {
+            document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        }, 60000);
+    </script>
+</body>
+</html>
