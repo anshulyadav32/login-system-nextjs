@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { PrismaUserService } from '@/lib/prisma-user-service'
+import { PrismaUserService } from '@/services/user.service'
 
 import { z } from 'zod'
 

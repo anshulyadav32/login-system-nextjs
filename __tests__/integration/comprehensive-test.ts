@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { GET as healthGet } from './app/api/health/route'
-import { GET as statusGet } from './app/status/route'
+import { GET as statusGet } from './app/api/status/route'
 import { GET as testGet, POST as testPost } from './app/test/route'
 import { GET as rootGet } from './app/route'
 import { prisma } from './lib/prisma'

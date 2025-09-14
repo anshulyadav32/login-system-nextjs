@@ -1,48 +1,113 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
-import { PrismaUserService } from '@/lib/prisma-user-service'
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { PrismaUserService } from '@/services/user.service'
+import { authMiddleware } from '@/middlewares/auth'
+import { ApiResponseHandler } from '@/lib/api-response'
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/middlewares/rate-limit'
 
-export async function GET() {
+const responseHandler = new ApiResponseHandler()
+
+// Admin query schema
+const adminQuerySchema = z.object({
+  period: z.enum(['day', 'week', 'month', 'year']).optional().default('month'),
+  includeInactive: z.boolean().optional().default(false),
+  limit: z.number().min(1).max(1000).optional().default(100)
+})
+
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
+    // Apply rate limiting
+    const rateLimitResult = await RateLimiter.checkRateLimit(
+      request, 
+      'admin',
+      RATE_LIMIT_CONFIGS.API_ADMIN
+    )
     
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+    if (!rateLimitResult.allowed) {
+      return ApiResponseHandler.rateLimitExceeded(
+        Math.ceil((rateLimitResult.resetTime.getTime() - Date.now()) / 1000),
+        'Too many admin requests'
       )
     }
 
-    // Get user from storage to check role
-    const user = await PrismaUserService.findById(session.user.id)
-    if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 403 }
-      )
+    // Authenticate and authorize admin access
+    const authResult = await authMiddleware(request)
+
+    if (!authResult.authenticated) {
+      return ApiResponseHandler.unauthorized('Authentication required')
     }
 
-    // Get admin dashboard data
-    const stats = await PrismaUserService.getUserStats()
-    const dashboardData = {
-      totalUsers: stats.totalUsers,
-      totalAdmins: stats.adminUsers,
-      regularUsers: stats.regularUsers,
-      recentActivity: [
-        { id: 1, action: 'User registered', timestamp: new Date().toISOString() },
-        { id: 2, action: 'Admin login', timestamp: new Date().toISOString() }
-      ]
+    // Check admin role authorization
+    if (!authResult.user || !['admin', 'super_admin'].includes(authResult.user.role)) {
+      return ApiResponseHandler.forbidden('Admin access required')
     }
+
+    // Validate query parameters
+    const url = new URL(request.url)
+    const queryParams = {
+      period: url.searchParams.get('period') || 'month',
+      includeInactive: url.searchParams.get('includeInactive') === 'true',
+      limit: parseInt(url.searchParams.get('limit') || '100')
+    }
+
+    const validationResult = adminQuerySchema.safeParse(queryParams)
+    if (!validationResult.success) {
+      return ApiResponseHandler.validationError(validationResult.error)
+    }
+
+    const { period, includeInactive, limit } = validationResult.data
+    const userService = new PrismaUserService()
     
-    return NextResponse.json({
-      message: 'Admin access granted',
-      data: dashboardData
+    // Calculate period in days
+    const periodDays = {
+      day: 1,
+      week: 7,
+      month: 30,
+      year: 365
+    }[period]
+    
+    // Get user statistics
+    const userStats = await PrismaUserService.getUserStats()
+    const allUsers = await PrismaUserService.getAllUsers()
+
+    const stats = {
+      totalUsers: userStats.totalUsers,
+      activeUsers: userStats.totalUsers, // Simplified - all users considered active
+      inactiveUsers: 0,
+      newUsers: {
+        count: 0, // Simplified - would need additional logic to calculate
+        period: period
+      },
+      usersByRole: {
+        adminUsers: userStats.adminUsers,
+        regularUsers: userStats.regularUsers
+      },
+      recentUsers: allUsers.slice(0, limit).map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt
+      }))
+    }
+
+    return ApiResponseHandler.success({
+      user: {
+        id: authResult.user?.id,
+        username: authResult.user?.username,
+        role: authResult.user?.role
+      },
+      stats,
+      metadata: {
+        period,
+        includeInactive,
+        limit,
+        generatedAt: new Date().toISOString()
+      }
     })
+
   } catch (error) {
     console.error('Admin route error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return ApiResponseHandler.internalError('Failed to fetch admin data')
   }
 }

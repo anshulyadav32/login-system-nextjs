@@ -21,7 +21,13 @@ const customJestConfig = {
     'lib/**/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
     '!**/node_modules/**'
-  ]
+  ],
+  transformIgnorePatterns: [
+    'node_modules/(?!(jose|@panva)/)',
+  ],
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }]
+  }
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

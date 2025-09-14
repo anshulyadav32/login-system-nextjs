@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { z } from 'zod'
-import { PrismaUserService } from '@/lib/prisma-user-service'
+import { PrismaUserService } from '@/services/user.service'
 
 // Validation schema for profile updates
 const profileUpdateSchema = z.object({
-  name: z.string().min(1, 'Name is required').optional(),
-  surname: z.string().optional(),
   username: z.string().min(3, 'Username must be at least 3 characters').optional(),
-  phone: z.string().optional(),
+  profilePicture: z.string().url('Invalid profile picture URL').optional(),
 })
 
 export async function GET() {

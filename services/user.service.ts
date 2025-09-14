@@ -1,4 +1,4 @@
-import { prisma } from './prisma'
+import { prisma } from '../lib/prisma'
 import * as bcrypt from 'bcryptjs'
 import type { User } from '@prisma/client'
 
@@ -116,6 +116,10 @@ export class PrismaUserService {
         username: true,
         role: true,
         profilePicture: true,
+        lastLoginAt: true,
+        loginCount: true,
+        isLocked: true,
+        lockedUntil: true,
         createdAt: true,
         updatedAt: true
       }

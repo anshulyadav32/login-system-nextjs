@@ -14,9 +14,16 @@ model User {
   password            String?
   role                String               @default("user")
   profilePicture      String?
+  lastLoginAt         DateTime?
+  loginCount          Int                  @default(0)
+  isLocked            Boolean              @default(false)
+  lockedUntil         DateTime?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   webauthnCredentials WebAuthnCredential[]
+  sessions            Session[]
+  loginAttempts       LoginAttempt[]
+  refreshTokens       RefreshToken[]
 
   @@map("users")
 }
@@ -35,4 +42,69 @@ model WebAuthnCredential {
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("webauthn_credentials")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  ipAddress    String?
+  userAgent    String?
+  deviceInfo   String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  jti       String   @unique // JWT ID
+  userId    String?
+  tokenHash String   @unique // Hash of the token for security
+  reason    String?  // Reason for blacklisting (logout, security, etc.)
+  expiresAt DateTime // When the token would have expired
+  createdAt DateTime @default(now())
+
+  @@index([jti])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("token_blacklist")
+}
+
+model LoginAttempt {
+  id          String   @id @default(cuid())
+  email       String?
+  username    String?
+  ipAddress   String
+  userAgent   String?
+  success     Boolean
+  failReason  String?
+  userId      String?
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([ipAddress, createdAt])
+  @@index([email, createdAt])
+  @@index([username, createdAt])
+  @@map("login_attempts")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
 }

@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import { PrismaUserService } from '@/lib/prisma-user-service'
+import { PrismaUserService } from '@/services/user.service'
 import { prisma } from '@/lib/prisma'
 
 export default {
